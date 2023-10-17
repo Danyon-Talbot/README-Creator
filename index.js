@@ -58,7 +58,7 @@ inquirer
         },
         {
             type: 'list',
-            message: 'Does you have any Credits to add?',
+            message: 'Do you have any Credits to add?',
             name: 'creditConfirm',
             choices: ['Yes', 'No'],
             validate: function (value) {
