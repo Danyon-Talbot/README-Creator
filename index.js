@@ -6,6 +6,11 @@ inquirer
     .prompt([
         {
             type: 'input',
+            message: "Name this file for storage",
+            name: 'filename'
+        },
+        {
+            type: 'input',
             message: 'Project Title:',
             name: 'title',
         },
@@ -68,9 +73,9 @@ inquirer
 
 * ${data.problem}
 
-What have I learned from this project?
+### What have I learned from this project?
 
-${data.learned}
+*${data.learned}
 
 ## Installation:
 
@@ -84,9 +89,8 @@ ${data.learned}
 
 * ${data.credits}
         `;
-    
         const saveFolder = './generated-readmes';
-        const fileName = 'README.md';
+        const fileName = `${data.filename.toLowerCase().split(' ').join('')}.md`;
 
         if (!fs.existsSync(saveFolder)) {
             fs.mkdirSync(saveFolder);
