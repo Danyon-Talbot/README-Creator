@@ -1,8 +1,8 @@
-# Testing
+# test 6
 
 ## Description
 
-* Test
+* test
 
 ### What was my motivation?
 
@@ -24,6 +24,7 @@
 
 * STEP 1
 * STEP 2
+* STEP 3
 
 ## Usage:
 
@@ -31,5 +32,5 @@
 
 ## Credits:
 
-* test
+* test 6
         

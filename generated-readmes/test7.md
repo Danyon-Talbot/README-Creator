@@ -1,35 +1,37 @@
-# Testing
+# test 7
 
 ## Description
 
-* Test
+* TEST
 
 ### What was my motivation?
 
-* test
+* TEST
 
 ### Why did you build this project?
 
-* test
+* TEST
 
 ### What problem does this solve?
 
-* test
+* TEST
 
 ### What have I learned from this project?
 
-* test
+* TEST
 
 ## Installation:
 
 * STEP 1
 * STEP 2
+* STEP 3
+* STEP 4
 
 ## Usage:
 
-* test
+* TEST
 
 ## Credits:
 
-* test
+* [WIKI](WIKI.COM)
         
