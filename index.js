@@ -117,7 +117,7 @@ const createREADME = `# ${data.title}
 
 ### What have I learned from this project?
 
-*${data.learned}
+* ${data.learned}
 
 ## Installation:
 
