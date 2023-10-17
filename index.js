@@ -57,15 +57,22 @@ inquirer
             name: 'usage',
         },
         {
-            type: 'input',
-            message: 'Credits',
-            name: 'credits',
+            type: 'list',
+            message: 'Does you have any Credits to add?',
+            name: 'creditConfirm',
+            choices: ['Yes', 'No'],
+            validate: function (value) {
+                if (value !== 'Yes' && value !== 'No') {
+                    return 'Please select either "Yes" or "No"';
+                }
+                return true;
+            },
         }
     ])
     .then(data => {
         // If the user selected "Yes" to add required installation steps, calls function to add installation steps.
         if (data.installConfirm === "Yes") {
-            data.installation = []
+            data.installation = [];
             promptInstallationSteps(data);
         } else {
             // If the user did not select "Yes", this saves the file as is.
@@ -84,7 +91,9 @@ function promptInstallationSteps(data) {
         .then((installData) => {
             // If the user originally selected or proceeded to input "NO", this saves the file at this point.
             if (installData.installStep.toLowerCase() === 'no') {
-                saveREADME(data);
+
+                saveCreditsInfo(data); // !!! THIS WAS CHANGED TO CALL A FUNCTION TO ADD CREDITS. PREVIOUSLY saveREADME() !!!
+
             } else {
                 // If the user did not originally select "NO", and has not inputed "NO" it continues to prompt for more steps.
                 data.installation.push(installData.installStep);
@@ -93,8 +102,67 @@ function promptInstallationSteps(data) {
         })
 }
 
+// Checks if the user chose "Yes" to add Credits.
+function saveCreditsInfo(data) {
+    if (data.creditConfirm === "Yes") {
+        // Creates a data container and calls the function to prompt the user.
+        data.credits = [];
+        promptCreditsInfo(data);
+    } else {
+        //Saves the file if no credits have been added.
+        saveREADME(data);
+    }
+
+}
+
+// Prompts the user to add the name of the Credit.
+function promptCreditsInfo(data) {
+    inquirer
+        .prompt([
+            {
+                type: 'input',
+                message: 'Add Name of Credit (Not URL. Type "exit" to exit', // If the user types "exit" the file is saved and exits.
+                name: 'creditName',
+            }
+        ])
+        .then((creditData) => {
+            if (creditData.creditName.toLowerCase() === "exit") { // Exits the program.
+                saveREADME(data);
+            } else {
+                data.credits.push(creditData.creditName); // Pushes entered data to credits
+                promptCreditsURL(data);
+            }
+        });
+}
+
+// Prompts the user to add a URL to the Credit.
+function promptCreditsURL(data) {
+    inquirer
+        .prompt([
+            {
+                type: 'input',
+                message: 'Add Credit URL',
+                name: 'creditURL'
+            }
+        ])
+        .then((creditData) => {
+            data.credits.push(creditData.creditURL); // Pushes entered data to credits
+            promptCreditsInfo(data);
+        });
+}
+
 // This function takes and assembles the inputed data into the necessary positions.
 function saveREADME(data) {
+
+
+    const credits = [];
+    for (let i = 0; i < data.credits.length; i += 2) {
+        const name = data.credits[i];
+        const url = data.credits[i + 1];
+        if (name && url) {
+            credits.push(`* [${name}](${url})`);
+        }
+    }
 
 // The literal string positions the elements exactly where they need to be on the page.
 const createREADME = `# ${data.title}
@@ -129,7 +197,7 @@ ${data.installation.length > 0 ? data.installation.map(step => `* ${step}`).join
 
 ## Credits:
 
-* ${data.credits}
+${credits.length > 0 ? credits.join('\n') : 'No credits provided.'}
         `;
         // Defines the path for the save folder.
         const saveFolder = './generated-readmes';
