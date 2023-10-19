@@ -89,12 +89,12 @@ inquirer
     .then(addScreenShot => {
         Object.assign(data, addScreenShot);
         // If the user selected "Yes" to add screenshots, it calls the prompt to add screenshots
-        if (data.screenshotConfirm === "Yes" && data.installConfirm === "Yes" && data.creditConfirm === "Yes") {
+        if (data.screenshotConfirm === "Yes") {
             promptAddScreenShot(data);
-        } else if (data.screenshotConfirm === "No" && data.installConfirm === "Yes"){
+        } else if (data.installConfirm === "Yes"){
             // If user skipped adding a screenshot but wants to add installation steps, calls function to prompt for installation steps
             promptInstallationSteps(data);
-        } else if (data.installConfirm === "No" && data.screenshotConfirm === "No" && data.creditConfirm === "Yes") {
+        } else if (data.creditConfirm === "Yes") {
             // If user skipped screenshot and installation steps but said yes to credits, skips to function to prompt for credit information
             promptCreditsInfo(data);
         } else {
@@ -102,7 +102,7 @@ inquirer
         }
     })
 
-    function promptAddScreenShot() {
+    function promptAddScreenShot(data) {
         inquirer
             .prompt({
                 type: 'input',
@@ -111,7 +111,13 @@ inquirer
             })
             .then((imageData) => {
                 data.screenShots.push(imageData.screenshotName);
-                promptInstallationSteps();
+                if (data.installConfirm === "Yes") {
+                    promptInstallationSteps(data);
+                } else if (data.installConfirm === "No" && data.creditConfirm === "Yes") {
+                    promptCreditsInfo(data);
+                } else {
+                    saveREADME(data)
+                }
             });
     }
     
@@ -124,11 +130,15 @@ function promptInstallationSteps(data) {
             name: 'installStep',
         })
         .then((installData) => {
-            // If the user originally selected or proceeded to input "NO", this saves the file at this point.
+            // If the user originally selected "No" or proceeded to input "exit", this saves the file at this point.
             if (installData.installStep.toLowerCase() === 'exit') {
-                promptCreditsInfo(data);
+                if (data.creditConfirm === "No") {
+                    saveREADME(data);
+                } else {
+                    promptCreditsInfo(data);
+                }
             } else {
-                // If the user did not originally select "NO", and has not inputed "NO" it continues to prompt for more steps.
+                // If the user did not originally select "NO", and has not inputed "exit" it continues to prompt for more steps.
                 data.installation.push(installData.installStep);
                 promptInstallationSteps(data);
             }
