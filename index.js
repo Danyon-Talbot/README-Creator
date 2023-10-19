@@ -3,7 +3,8 @@ const path = require('path');
 const inquirer = require('inquirer');
 const data = {
         credits: [],
-        installation: []
+        installation: [],
+        screenShots: []
         };
 
 inquirer
@@ -49,7 +50,7 @@ inquirer
             name: 'usage',
         },
         {
-            type: 'input',
+            type: 'list',
             message: 'Do you wish to add a screenshot?',
             name: 'screenshotConfirm',
             choices: ['Yes', 'No'],
@@ -85,52 +86,53 @@ inquirer
             },
         }
     ])
-    .then(installSteps => {
-        Object.assign(data, installSteps);
-        // If the user selected "Yes" to add required installation steps, calls function to add installation steps.
-        if (data.installConfirm === "Yes") {
-            data.installation = [];
+    .then(addScreenShot => {
+        Object.assign(data, addScreenShot);
+        // If the user selected "Yes" to add screenshots, it calls the prompt to add screenshots
+        if (data.screenshotConfirm === "Yes" && data.installConfirm === "Yes" && data.creditConfirm === "Yes") {
+            promptAddScreenShot(data);
+        } else if (data.screenshotConfirm === "No" && data.installConfirm === "Yes"){
+            // If user skipped adding a screenshot but wants to add installation steps, calls function to prompt for installation steps
             promptInstallationSteps(data);
+        } else if (data.installConfirm === "No" && data.screenshotConfirm === "No" && data.creditConfirm === "Yes") {
+            // If user skipped screenshot and installation steps but said yes to credits, skips to function to prompt for credit information
+            promptCreditsInfo(data);
         } else {
-            // If the user did not select "Yes", this saves the file as is.
-            saveREADME(data);
+           saveREADME(data);
         }
     })
 
-
+    function promptAddScreenShot() {
+        inquirer
+            .prompt({
+                type: 'input',
+                message: 'Input name of Image:',
+                name: 'screenshotName',
+            })
+            .then((imageData) => {
+                data.screenShots.push(imageData.screenshotName);
+                promptInstallationSteps();
+            });
+    }
+    
 //prompts the user to add each step necessary for installation.
 function promptInstallationSteps(data) {
     inquirer
         .prompt({
             type: 'input',
-            message: 'Please add an installation step (Enter "NO" to exit):',
+            message: 'Please add an installation step (Enter "exit" to exit):',
             name: 'installStep',
         })
         .then((installData) => {
             // If the user originally selected or proceeded to input "NO", this saves the file at this point.
-            if (installData.installStep.toLowerCase() === 'no') {
-
-                saveCreditsInfo(data); // !!! THIS WAS CHANGED TO CALL A FUNCTION TO ADD CREDITS. PREVIOUSLY saveREADME() !!!
-
+            if (installData.installStep.toLowerCase() === 'exit') {
+                promptCreditsInfo(data);
             } else {
                 // If the user did not originally select "NO", and has not inputed "NO" it continues to prompt for more steps.
                 data.installation.push(installData.installStep);
                 promptInstallationSteps(data);
             }
-        })
-}
-
-// Checks if the user chose "Yes" to add Credits.
-function saveCreditsInfo(data) {
-    if (data.creditConfirm === "Yes") {
-        // Creates a data container and calls the function to prompt the user.
-        data.credits = [];
-        promptCreditsInfo(data);
-    } else {
-        //Saves the file if no credits have been added.
-        saveREADME(data);
-    }
-
+        });
 }
 
 // Prompts the user to add the name of the Credit.
@@ -153,6 +155,7 @@ function promptCreditsInfo(data) {
         });
 }
 
+
 // Prompts the user to add a URL to the Credit.
 function promptCreditsURL(data) {
     inquirer
@@ -169,6 +172,7 @@ function promptCreditsURL(data) {
         });
 }
 
+
 // This function takes and assembles the inputed data into the necessary positions.
 function saveREADME(data) {
 
@@ -182,6 +186,8 @@ function saveREADME(data) {
     }
 
 // The literal string positions the elements exactly where they need to be on the page.
+// NOTE: Adding an image is entirely based on if the images are located in the ../Assets/images folder.
+// Potentially will add URL links to images as an alternative.
 const createREADME = `# ${data.title}
 
 ## Description
@@ -203,6 +209,10 @@ const createREADME = `# ${data.title}
 ### What have I learned from this project?
 
 * ${data.learned}
+
+## Website Page:
+
+${data.screenShots.map(filename => `![Screenshot](../Assets/images/${filename})`).join('\n')}
 
 ## Installation:
 

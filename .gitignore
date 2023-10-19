@@ -3,3 +3,10 @@
 
 # Ignores Node.JS dependencies
 node_modules
+generated-readmes/b.md
+.gitignore
+.gitignore
+generated-readmes/notest.md
+.gitignore
+generated-readmes/test.md
+generated-readmes/c.md
