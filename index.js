@@ -1,6 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 const inquirer = require('inquirer');
+const data = {
+        credits: [],
+        installation: []
+        };
 
 inquirer
     .prompt([
@@ -40,6 +44,23 @@ inquirer
             name: 'learned',
         },
         {
+            type: 'input',
+            message: 'Usage',
+            name: 'usage',
+        },
+        {
+            type: 'input',
+            message: 'Do you wish to add a screenshot?',
+            name: 'screenshotConfirm',
+            choices: ['Yes', 'No'],
+            validate: function (value) {
+                if (value !== 'Yes' && value !== 'No') {
+                    return 'Please select either "Yes" or "No"';
+                }
+                return true;
+            },
+        },
+        {
             type: 'list',
             message: 'Does this project require any installations?',
             name: 'installConfirm',
@@ -50,11 +71,6 @@ inquirer
                 }
                 return true;
             },
-        },
-        {
-            type: 'input',
-            message: 'Usage',
-            name: 'usage',
         },
         {
             type: 'list',
@@ -69,7 +85,8 @@ inquirer
             },
         }
     ])
-    .then(data => {
+    .then(installSteps => {
+        Object.assign(data, installSteps);
         // If the user selected "Yes" to add required installation steps, calls function to add installation steps.
         if (data.installConfirm === "Yes") {
             data.installation = [];
@@ -79,6 +96,7 @@ inquirer
             saveREADME(data);
         }
     })
+
 
 //prompts the user to add each step necessary for installation.
 function promptInstallationSteps(data) {
@@ -121,7 +139,7 @@ function promptCreditsInfo(data) {
         .prompt([
             {
                 type: 'input',
-                message: 'Add Name of Credit (Not URL. Type "exit" to exit', // If the user types "exit" the file is saved and exits.
+                message: 'Add Name of Credit (Not URL. Type "exit" to exit)', // If the user types "exit" the file is saved and exits.
                 name: 'creditName',
             }
         ])
@@ -154,7 +172,6 @@ function promptCreditsURL(data) {
 // This function takes and assembles the inputed data into the necessary positions.
 function saveREADME(data) {
 
-
     const credits = [];
     for (let i = 0; i < data.credits.length; i += 2) {
         const name = data.credits[i];
@@ -175,7 +192,7 @@ const createREADME = `# ${data.title}
 
 * ${data.motivation}
 
-### Why did you build this project?
+### Why did I build this project?
 
 * ${data.reason}
 
@@ -189,7 +206,7 @@ const createREADME = `# ${data.title}
 
 ## Installation:
 
-${data.installation.length > 0 ? data.installation.map(step => `* ${step}`).join('\n') : 'No installation steps provided.'}
+${data.installation.length > 0 ? data.installation.map(step => `* ${step}`).join('\n') : 'No installations required.'}
 
 ## Usage:
 
