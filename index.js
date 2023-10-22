@@ -229,12 +229,12 @@ function promptTestInstructions(data) {
 // Calls the GitHub REST API to pull the username and return the URL for the user's profile.
 async function fetchGitHubURL(data) {
     try {
-      const token = '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';
+      const token = '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';
   
         // Use Inquirer to prompt for GitHub Profile
         const githubProfileInput = await inquirer.prompt({
             type: 'input',
-            message: 'GitHub Profile:',
+            message: 'Add Your GitHub Profile:',
             name: 'githubProfile',
         });
 
@@ -289,14 +289,19 @@ function saveREADME(data) {
 // The literal string positions the elements exactly where they need to be on the page.
 const createREADME = `# ${data.title}
 
+## Table of Contents
+- [Description](#description)
+- [Website Page](#website-page)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Credits](#credits)
+- [Contributions](#contributions)
+- [Testing](#testing)
+- [Questions](#questions)
+
 ## Description
 
 * ${data.description}
-
-## Questions
-
-#### My GitHub Profile:
-* [GitHub Profile](${data.githubURL})
 
 ### What was my motivation?
 
@@ -330,9 +335,23 @@ ${data.installation.length > 0 ? data.installation.map(step => `* ${step}`).join
 
 ${credits.length > 0 ? credits.join('\n') : 'No credits provided.'}
 
+## Contributions:
+
+* ${data.contributions}
+
 ## Testing:
 
 ${data.test.length > 0 ? data.test.map(test => `* ${test}`).join('\n') : 'Tests To Be Added.'}
+
+## Questions
+
+#### My GitHub Profile:
+* [GitHub Profile](${data.githubURL})
+
+#### Additional Questions?
+
+* If you have any addtional questions, please reach out to me here: ${data.personalEmail}
+
         `;
         // Defines the path for the save folder.
         const saveFolder = './generated-readmes';
