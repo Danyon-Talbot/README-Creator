@@ -209,7 +209,7 @@ function promptAddUsage(data) {
         .prompt([
             {
                 type: 'input',
-                message: 'Add How to Use Steps: (Type "exit" to exit)', // If the user types "exit" the file is saved and exits.
+                message: 'Add How to Use Steps: (Type "exit" to exit):', // If the user types "exit" the file is saved and exits.
                 name: 'usageName',
             }
         ])
@@ -264,7 +264,7 @@ function promptTestInstructions(data) {
         .prompt([
             {
                 type: 'input',
-                message: 'Add Test Instructions(Type "exit" to exit)', // If the user types "exit" the file is saved and exits.
+                message: 'Add Test Instructions(Type "exit" to exit):', // If the user types "exit" the file is saved and exits.
                 name: 'testName',
             }
         ])
@@ -409,7 +409,7 @@ ${data.installation.length > 0 ? data.installation.map(step => `* ${step}`).join
 
 ## Usage:
 
-* ${data.usage}
+${data.usage.length > 0 ? data.usage.map(item => `* ${item}`).join('\n') : 'No usage information provided.'}
 
 ## Credits:
 
