@@ -4,16 +4,13 @@ const inquirer = require('inquirer');
 const data = {
         credits: [],
         installation: [],
-        screenShots: []
+        screenShots: [],
+        test: [],
+        githubURL: '',
         };
 
 inquirer
     .prompt([
-        {
-            type: 'input',
-            message: "Name this file for storage",
-            name: 'filename'
-        },
         {
             type: 'input',
             message: 'Project Title:',
@@ -50,6 +47,11 @@ inquirer
             name: 'usage',
         },
         {
+            type: 'input',
+            message: 'Add Contribution Guidelines:',
+            name: 'contributions',
+        },
+        {
             type: 'list',
             message: 'Do you wish to add a screenshot?',
             name: 'screenshotConfirm',
@@ -84,42 +86,64 @@ inquirer
                 }
                 return true;
             },
+        },
+        {
+            type: 'list',
+            message: 'Add User Testing Options?',
+            name: 'testingConfirm',
+            choices: ['Yes', 'No'],
+            validate: function (value) {
+                if (value !== 'Yes' && value !== 'No') {
+                    return 'Please select either "Yes" or "No"';
+                }
+                return true;
+            },
         }
+
     ])
     .then(addScreenShot => {
         Object.assign(data, addScreenShot);
-        // If the user selected "Yes" to add screenshots, it calls the prompt to add screenshots
+        // If the user selected "Yes" to add screenshots, it calls the prompt to add screenshots.
         if (data.screenshotConfirm === "Yes") {
             promptAddScreenShot(data);
         } else if (data.installConfirm === "Yes"){
-            // If user skipped adding a screenshot but wants to add installation steps, calls function to prompt for installation steps
+            // If user skipped adding a screenshot but wants to add installation steps, calls function to prompt for installation steps.
             promptInstallationSteps(data);
         } else if (data.creditConfirm === "Yes") {
-            // If user skipped screenshot and installation steps but said yes to credits, skips to function to prompt for credit information
+            // If user skipped screenshot and installation steps but said yes to credits, skips to function to prompt for credit information.
             promptCreditsInfo(data);
+        } else if (data.testingConfirm === "Yes") {
+            // If user skipped all previous steps, calls to add testing instructions.
+            promptTestInstructions(data);
         } else {
-           saveREADME(data);
+            // If user skipped all previous steps, calls to add GitHub Profile URL.
+            fetchGitHubURL(data);
         }
     })
 
-    function promptAddScreenShot(data) {
-        inquirer
-            .prompt({
-                type: 'input',
-                message: 'Input name of Image:',
-                name: 'screenshotName',
-            })
-            .then((imageData) => {
-                data.screenShots.push(imageData.screenshotName);
-                if (data.installConfirm === "Yes") {
-                    promptInstallationSteps(data);
-                } else if (data.installConfirm === "No" && data.creditConfirm === "Yes") {
-                    promptCreditsInfo(data);
-                } else {
-                    saveREADME(data)
-                }
-            });
-    }
+
+
+
+// NOTE: Adding an image is entirely based on if the images are located in the ../Assets/images folder.
+// Potentially will add URL links to images as an alternative.
+function promptAddScreenShot(data) {
+    inquirer
+        .prompt({
+            type: 'input',
+            message: 'Input ScreenShot file name:',
+            name: 'screenshotName',
+        })
+        .then((imageData) => {
+            data.screenShots.push(imageData.screenshotName);
+            if (data.installConfirm === "Yes") {
+                promptInstallationSteps(data);
+            } else if (data.installConfirm === "No" && data.creditConfirm === "Yes") {
+                promptCreditsInfo(data);
+            } else {
+                saveREADME(data)
+            }
+        });
+}
     
 //prompts the user to add each step necessary for installation.
 function promptInstallationSteps(data) {
@@ -157,9 +181,9 @@ function promptCreditsInfo(data) {
         ])
         .then((creditData) => {
             if (creditData.creditName.toLowerCase() === "exit") { // Exits the program.
-                saveREADME(data);
+                promptTestInstructions(data);
             } else {
-                data.credits.push(creditData.creditName); // Pushes entered data to credits
+                data.credits.push(creditData.creditName); // Pushes entered data to credits.
                 promptCreditsURL(data);
             }
         });
@@ -177,15 +201,82 @@ function promptCreditsURL(data) {
             }
         ])
         .then((creditData) => {
-            data.credits.push(creditData.creditURL); // Pushes entered data to credits
+            data.credits.push(creditData.creditURL); // Pushes entered data to credits.
             promptCreditsInfo(data);
         });
 }
 
+function promptTestInstructions(data) {
+    inquirer
+        .prompt([
+            {
+                type: 'input',
+                message: 'Add Test Instructions(Not URL. Type "exit" to exit)', // If the user types "exit" the file is saved and exits.
+                name: 'testName',
+            }
+        ])
+        .then((testData) => {
+            if (testData.testName.toLowerCase() === "exit") { // Exits the program.
+                fetchGitHubURL(data);
+            } else {
+                data.test.push(testData.testName); // Pushes entered data to test.
+                promptTestInstructions(data);
+            }
+        });
+}
+
+
+// Calls the GitHub REST API to pull the username and return the URL for the user's profile.
+async function fetchGitHubURL(data) {
+    try {
+      const token = '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';
+  
+        // Use Inquirer to prompt for GitHub Profile
+        const githubProfileInput = await inquirer.prompt({
+            type: 'input',
+            message: 'GitHub Profile:',
+            name: 'githubProfile',
+        });
+
+        // Assigns the user input to a variable
+        const username = githubProfileInput.githubProfile;
+        const apiUrl = `https://api.github.com/users/${username}`;
+        
+        // Calls the API using the variable and authorises it.
+        const response = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                Authorization: `token ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        // Checks for response from the API
+        if (response.ok) {
+            const userData = await response.json();
+
+            // On successful response, it pulls the URL and assigns it to a variable
+            if (userData.message !== 'Not Found') {
+                data.githubURL = userData.html_url;
+                // Displays the URL in the console as confirmation
+                console.log('GitHub URL:', data.githubURL);
+                saveREADME(data);
+            } else {
+                // If username is not found, prompts the user and returns to input
+                console.log("GitHub Username Not Found!");
+                return;
+            }
+        } else {
+            //Notes if the API call failed.
+            console.log("Error fetching GitHub data:", response.statusText);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
 
 // This function takes and assembles the inputed data into the necessary positions.
 function saveREADME(data) {
-
     const credits = [];
     for (let i = 0; i < data.credits.length; i += 2) {
         const name = data.credits[i];
@@ -196,13 +287,16 @@ function saveREADME(data) {
     }
 
 // The literal string positions the elements exactly where they need to be on the page.
-// NOTE: Adding an image is entirely based on if the images are located in the ../Assets/images folder.
-// Potentially will add URL links to images as an alternative.
 const createREADME = `# ${data.title}
 
 ## Description
 
 * ${data.description}
+
+## Questions
+
+#### My GitHub Profile:
+* [GitHub Profile](${data.githubURL})
 
 ### What was my motivation?
 
@@ -235,11 +329,15 @@ ${data.installation.length > 0 ? data.installation.map(step => `* ${step}`).join
 ## Credits:
 
 ${credits.length > 0 ? credits.join('\n') : 'No credits provided.'}
+
+## Testing:
+
+${data.test.length > 0 ? data.test.map(test => `* ${test}`).join('\n') : 'Tests To Be Added.'}
         `;
         // Defines the path for the save folder.
         const saveFolder = './generated-readmes';
         // takes the name input and appends the ".md" file type for a markdown file.
-        const fileName = `${data.filename.toLowerCase().split(' ').join('')}.md`;
+        const fileName = `${data.title.toUpperCase().split(' ').join('')}.md`;
 
         // Checks if the file exists and creates it if it doesn't.
         if (!fs.existsSync(saveFolder)) {
@@ -250,8 +348,9 @@ ${credits.length > 0 ? credits.join('\n') : 'No credits provided.'}
         const filePath = path.join(saveFolder, fileName);
 
         // Writes to the filepath and sets the file content using the generated structure.
-        fs.writeFile(filePath, createREADME, (err) =>
-        err ? console.error(err) : console.log('Success!'));
-
+        const writeFilePromise = new Promise((resolve, reject) => {
+            fs.writeFile(filePath, createREADME, (err) =>
+            err ? console.error(err) : console.log('SAVED!'));
+        })
+        return writeFilePromise;
     }
-
