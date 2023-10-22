@@ -1,4 +1,4 @@
-# TEST
+# Project Test
 
 ## Table of Contents
 - [Description](#description)
@@ -13,7 +13,7 @@
 
 ## Description
 
-* Test
+* Testing README Generator
 
 ### What was my motivation?
 
@@ -45,17 +45,18 @@ This application is covered by the [MIT License](https://opensource.org/licenses
 
 * Step 1
 * Step 2
+* Step 3
 
 ## Usage:
 
-* How 1
-* How 2
-* How 3
+* Step 1
+* Step 2
+* Step 3
+* Step 4
 
 ## Credits:
 
-* [Cred 1](cred.cred)
-* [Cred 2](cred.cred)
+* [Credit 1](https://youtube.com)
 
 ## Contributions:
 
@@ -63,9 +64,9 @@ This application is covered by the [MIT License](https://opensource.org/licenses
 
 ## Testing:
 
-* Test 1
-* Test 2
-* Test 3
+* Test Command 1
+* test command 2
+* Test command 3
 
 ## Questions
 
