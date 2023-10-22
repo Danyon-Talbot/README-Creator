@@ -209,7 +209,7 @@ function promptAddUsage(data) {
         .prompt([
             {
                 type: 'input',
-                message: 'Add How to Use Steps: (Type "exit" to exit):', // If the user types "exit" the file is saved and exits.
+                message: 'Add How to Use: (Type "exit" to exit):', // If the user types "exit" the file is saved and exits.
                 name: 'usageName',
             }
         ])
