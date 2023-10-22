@@ -229,8 +229,6 @@ function promptTestInstructions(data) {
 // Calls the GitHub REST API to pull the username and return the URL for the user's profile.
 async function fetchGitHubURL(data) {
     try {
-      const token = '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';
-  
         // Use Inquirer to prompt for GitHub Profile
         const githubProfileInput = await inquirer.prompt({
             type: 'input',
@@ -243,13 +241,7 @@ async function fetchGitHubURL(data) {
         const apiUrl = `https://api.github.com/users/${username}`;
         
         // Calls the API using the variable and authorises it.
-        const response = await fetch(apiUrl, {
-            method: 'GET',
-            headers: {
-                Authorization: `token ${token}`,
-                'Content-Type': 'application/json',
-            },
-        });
+        const response = await fetch(apiUrl);
 
         // Checks for response from the API
         if (response.ok) {
