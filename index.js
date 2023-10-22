@@ -6,7 +6,10 @@ const data = {
         installation: [],
         screenShots: [],
         test: [],
+        usage: [],
+        githubProfile: [],
         githubURL: '',
+        personalEmail: '',
         };
 
 inquirer
@@ -40,11 +43,6 @@ inquirer
             type: 'input',
             message: 'What have you learned from this project?',
             name: 'learned',
-        },
-        {
-            type: 'input',
-            message: 'Usage',
-            name: 'usage',
         },
         {
             type: 'input',
@@ -117,7 +115,7 @@ inquirer
             promptTestInstructions(data);
         } else {
             // If user skipped all previous steps, calls to add GitHub Profile URL.
-            fetchGitHubURL(data);
+            promptAddUsage(data);
         }
     })
 
@@ -140,7 +138,7 @@ function promptAddScreenShot(data) {
             } else if (data.installConfirm === "No" && data.creditConfirm === "Yes") {
                 promptCreditsInfo(data);
             } else {
-                saveREADME(data)
+                promptAddUsage(data)
             }
         });
 }
@@ -157,7 +155,7 @@ function promptInstallationSteps(data) {
             // If the user originally selected "No" or proceeded to input "exit", this saves the file at this point.
             if (installData.installStep.toLowerCase() === 'exit') {
                 if (data.creditConfirm === "No") {
-                    saveREADME(data);
+                    promptAddUsage(data);
                 } else {
                     promptCreditsInfo(data);
                 }
@@ -181,7 +179,7 @@ function promptCreditsInfo(data) {
         ])
         .then((creditData) => {
             if (creditData.creditName.toLowerCase() === "exit") { // Exits the program.
-                promptTestInstructions(data);
+                promptAddUsage(data);
             } else {
                 data.credits.push(creditData.creditName); // Pushes entered data to credits.
                 promptCreditsURL(data);
@@ -206,12 +204,67 @@ function promptCreditsURL(data) {
         });
 }
 
+function promptAddUsage(data) {
+    inquirer
+        .prompt([
+            {
+                type: 'input',
+                message: 'Add How to Use Steps: (Type "exit" to exit)', // If the user types "exit" the file is saved and exits.
+                name: 'usageName',
+            }
+        ])
+        .then((usageData) => {
+            if (usageData.usageName.toLowerCase() === "exit") { // Exits the program.
+              promptAddLicense(data);
+            } else {
+                data.usage.push(usageData.usageName); // Pushes entered data to usage.
+                promptAddUsage(data);
+            }
+        });
+}
+
+function promptAddLicense(data) {
+    const licenseChoices = ['GNU General Public License v3.0', 'MIT License'];
+
+    inquirer
+        .prompt([
+            {
+                type: 'list',
+                message: 'Select License:',
+                name: 'license',
+                choices: licenseChoices,
+            }
+        ])
+        .then((licenseData) => {
+            // Set the license property in the data object
+            data.license = licenseData.license;
+
+            // Generate the license badge based on the selected license
+            const licenseBadges = {
+                'GNU General Public License v3.0': 'https://img.shields.io/badge/License-GPLv3-blue.svg',
+                'MIT License': 'https://img.shields.io/badge/License-MIT-yellow.svg',
+            };
+
+            data.licenseBadge = licenseData.license in licenseBadges ? `![License](${licenseBadges[licenseData.license]})` : '';
+
+            // Continue with other functions depending on selected options
+            if (data.testingConfirm === "Yes") {
+                promptTestInstructions(data);
+            } else {
+                // Exit here and call the next function
+                fetchGitHubURL(data);
+            }
+        });
+}
+
+
+
 function promptTestInstructions(data) {
     inquirer
         .prompt([
             {
                 type: 'input',
-                message: 'Add Test Instructions(Not URL. Type "exit" to exit)', // If the user types "exit" the file is saved and exits.
+                message: 'Add Test Instructions(Type "exit" to exit)', // If the user types "exit" the file is saved and exits.
                 name: 'testName',
             }
         ])
@@ -237,7 +290,8 @@ async function fetchGitHubURL(data) {
         });
 
         // Assigns the user input to a variable
-        const username = githubProfileInput.githubProfile;
+        data.githubProfile = githubProfileInput.githubProfile;
+        const username = data.githubProfile;
         const apiUrl = `https://api.github.com/users/${username}`;
         
         // Calls the API using the variable and authorises it.
@@ -252,7 +306,7 @@ async function fetchGitHubURL(data) {
                 data.githubURL = userData.html_url;
                 // Displays the URL in the console as confirmation
                 console.log('GitHub URL:', data.githubURL);
-                saveREADME(data);
+                promptPersonalEmail(data);
             } else {
                 // If username is not found, prompts the user and returns to input
                 console.log("GitHub Username Not Found!");
@@ -267,6 +321,23 @@ async function fetchGitHubURL(data) {
     }
 }
 
+async function promptPersonalEmail(data) {
+    const emailPrompt = await inquirer.prompt([
+        {
+            type: 'input',
+            message: 'Enter contact email:',
+            name: 'personalEmail',
+            validate: function (value) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(value) ? true : 'Please enter a valid email address';
+
+            }   
+        }
+    ]);
+    data.personalEmail = emailPrompt.personalEmail;
+    saveREADME(data);
+}
+
 // This function takes and assembles the inputed data into the necessary positions.
 function saveREADME(data) {
     const credits = [];
@@ -278,11 +349,22 @@ function saveREADME(data) {
         }
     }
 
+    const licenseBadge = data.licenseBadge;
+
+    // License notice based on the selected license
+    const licenseNotice = data.license === 'GNU General Public License v3.0'
+        ? 'This application is covered by the [GNU General Public License v3.0](https://opensource.org/licenses/GPL-3.0).'
+        : data.license === 'MIT License'
+        ? 'This application is covered by the [MIT License](https://opensource.org/licenses/MIT).'
+        : '';
+
+// The literal string positions the elements exactly where they need to be on the page.
 // The literal string positions the elements exactly where they need to be on the page.
 const createREADME = `# ${data.title}
 
 ## Table of Contents
 - [Description](#description)
+- [License](#license)
 - [Website Page](#website-page)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -311,6 +393,12 @@ const createREADME = `# ${data.title}
 
 * ${data.learned}
 
+## License:
+
+${data.licenseBadge}
+
+${licenseNotice}
+
 ## Website Page:
 
 ${data.screenShots.map(filename => `![Screenshot](../Assets/images/${filename})`).join('\n')}
@@ -338,13 +426,14 @@ ${data.test.length > 0 ? data.test.map(test => `* ${test}`).join('\n') : 'Tests 
 ## Questions
 
 #### My GitHub Profile:
-* [GitHub Profile](${data.githubURL})
+* [${data.githubProfile}](${data.githubURL})
 
 #### Additional Questions?
 
-* If you have any addtional questions, please reach out to me here: ${data.personalEmail}
+* If you have any additional questions, please reach out to me here: ${data.personalEmail}
 
-        `;
+`;
+
         // Defines the path for the save folder.
         const saveFolder = './generated-readmes';
         // takes the name input and appends the ".md" file type for a markdown file.
