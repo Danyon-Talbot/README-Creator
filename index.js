@@ -181,15 +181,19 @@ function promptCreditsInfo(data) {
             if (creditData.creditName.toLowerCase() === "exit") { // Exits the program.
                 promptAddUsage(data);
             } else {
-                data.credits.push(creditData.creditName); // Pushes entered data to credits.
-                promptCreditsURL(data);
+                const credit = {
+                    name: creditData.creditName,
+                    url: '', // Initialize URL as empty
+                };
+                data.credits.push(credit); // Pushes entered data to credits.
+                promptCreditsURL(data, credit);
             }
         });
 }
 
 
 // Prompts the user to add a URL to the Credit.
-function promptCreditsURL(data) {
+function promptCreditsURL(data, credit) {
     inquirer
         .prompt([
             {
@@ -199,8 +203,8 @@ function promptCreditsURL(data) {
             }
         ])
         .then((creditData) => {
-            data.credits.push(creditData.creditURL); // Pushes entered data to credits.
-            promptCreditsInfo(data);
+            credit.url = creditData.creditURL; // Update the URL of the credit
+            promptCreditsInfo(data); // Continue adding more credits
         });
 }
 
@@ -340,16 +344,7 @@ async function promptPersonalEmail(data) {
 
 // This function takes and assembles the inputed data into the necessary positions.
 function saveREADME(data) {
-    const credits = [];
-    for (let i = 0; i < data.credits.length; i += 2) {
-        const name = data.credits[i];
-        const url = data.credits[i + 1];
-        if (name && url) {
-            credits.push(`* [${name}](${url})`);
-        }
-    }
-
-    const licenseBadge = data.licenseBadge;
+    const credits = data.credits.map(credit => `* [${credit.name}](${credit.url})`);
 
     // License notice based on the selected license
     const licenseNotice = data.license === 'GNU General Public License v3.0'
