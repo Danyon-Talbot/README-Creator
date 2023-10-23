@@ -39,7 +39,7 @@ This application is covered by the [GNU General Public License v3.0](https://ope
 
 ## Website Page:
 
-
+[Demo Video](https://watch.screencastify.com/v/VRJGyoaK21Ok22DZAFuj)
 
 ## Installation:
 
